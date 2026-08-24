@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: "Yu Gothic Medium", "Yu Gothic", YuGothic, "Hiragino Kaku Gothic ProN", "Hiragino Sans", system-ui, sans-serif; }
+    a { color: #0071c1; text-decoration: none; }
+    a:hover { color: #005a99; text-decoration: underline; }
+  </style>
+</helmet>
+<div style="width: 1440px; height: 900px; background: #f8f7f6; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">
+
+  <div style="width: 400px; background: #ffffff; border: 1px solid #d6d3d0; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.08); padding: 40px 36px; box-sizing: border-box;">
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 14px; margin-bottom: 28px;">
+      <svg width="44" height="44" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="4" fill="#0077c7"/>
+        <path d="M9 9 A 8 8 0 0 0 9 19" stroke="#0077c7" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <path d="M19 9 A 8 8 0 0 1 19 19" stroke="#0077c7" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <path d="M5.5 5.5 A 13 13 0 0 0 5.5 22.5" stroke="#aaa69f" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+        <path d="M22.5 5.5 A 13 13 0 0 1 22.5 22.5" stroke="#aaa69f" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+      </svg>
+      <div style="text-align: center; line-height: 1.4;">
+        <div style="font-size: 22px; font-weight: 700; color: #23221e;">ハッシン</div>
+        <div style="font-size: 13px; color: #706d65; margin-top: 2px;">北多摩東部地区委員会 宣伝部 編集支援ツール</div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <label style="font-size: 13px; font-weight: 700; color: #23221e;">ユーザーID</label>
+        <input type="text" value="" placeholder="id@kitatama-tobu.example" style="font-size: 15px; padding: 9px 12px; border: 1px solid #d6d3d0; border-radius: 6px; background: #ffffff; color: #23221e; box-sizing: border-box; font-family: inherit;" />
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <label style="font-size: 13px; font-weight: 700; color: #23221e;">パスワード</label>
+        <input type="password" value="" placeholder="••••••••" style="font-size: 15px; padding: 9px 12px; border: 2px solid #0077c7; border-radius: 6px; background: #ffffff; color: #23221e; box-sizing: border-box; font-family: inherit;" />
+      </div>
+
+      <button style="margin-top: 6px; background: #0077c7; color: #ffffff; border: none; border-radius: 6px; padding: 11px 16px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer;">ログイン</button>
+    </div>
+
+    <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid #edebe8; text-align: center;">
+      <span style="font-size: 12px; color: #aaa69f;">社内専用システムです。アカウントに関するお問い合わせは宣伝部までご連絡ください。</span>
+    </div>
+
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

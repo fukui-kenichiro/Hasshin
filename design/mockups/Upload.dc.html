@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: "Yu Gothic Medium", "Yu Gothic", YuGothic, "Hiragino Kaku Gothic ProN", "Hiragino Sans", system-ui, sans-serif; }
+    a { color: #0071c1; text-decoration: none; }
+    a:hover { color: #005a99; text-decoration: underline; }
+  </style>
+</helmet>
+<div style="width: 1440px; height: 900px; background: #f8f7f6; display: flex; box-sizing: border-box;">
+
+  <dc-import name="Sidebar" active="upload" hint-size="240,900"></dc-import>
+
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; height: 900px; box-sizing: border-box;">
+
+    <div style="padding: 22px 32px; border-bottom: 1px solid #d6d3d0; background: #ffffff;">
+      <div style="font-size: 22px; font-weight: 700; color: #23221e;">PDFアップロード</div>
+      <div style="font-size: 13px; color: #706d65; margin-top: 4px;">推進ニュース・がんばるニュースのPDFをアップロードすると、記事分割・地域タグ付け・リライト・重複チェックを自動で行います。</div>
+    </div>
+
+    <div style="flex: 1; overflow: auto; padding: 28px 32px; display: flex; flex-direction: column; gap: 28px; box-sizing: border-box;">
+
+      <div style="border: 2px dashed #aaa69f; border-radius: 10px; background: #ffffff; padding: 48px 24px; display: flex; flex-direction: column; align-items: center; gap: 12px;">
+        <svg width="40" height="40" viewBox="0 0 20 20" fill="none"><path d="M10 13V4M10 4L6.5 7.5M10 4l3.5 3.5" stroke="#0077c7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 13.5v1.8a1.7 1.7 0 0 0 1.7 1.7h8.6a1.7 1.7 0 0 0 1.7-1.7v-1.8" stroke="#0077c7" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <div style="font-size: 15px; color: #23221e; font-weight: 700;">PDFをドラッグ&amp;ドロップ、またはクリックして選択</div>
+        <div style="font-size: 13px; color: #706d65;">複数ファイルをまとめてアップロードできます（1ファイル最大 50MB）</div>
+        <button style="margin-top: 8px; background: #0077c7; color: #ffffff; border: none; border-radius: 6px; padding: 9px 20px; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer;">ファイルを選択</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <label style="font-size: 13px; font-weight: 700; color: #23221e;">ニュースの種別</label>
+        <div style="display: flex; gap: 10px;">
+          <span style="font-size: 13px; padding: 7px 14px; border-radius: 999px; background: #e7f1fb; color: #0077c7; border: 1px solid #bcdcf7; font-weight: 700;">北多摩東部地区推進ニュース</span>
+          <span style="font-size: 13px; padding: 7px 14px; border-radius: 999px; background: #ffffff; color: #706d65; border: 1px solid #d6d3d0;">がんばるニュース（小平市委員会）</span>
+        </div>
+        <div style="font-size: 12px; color: #aaa69f; margin-top: 2px;">種別に応じて掲載先HP・地域タグの初期判定が変わります。西東京関連トピックは推進ニュースの中から自動判定されます。</div>
+      </div>
+
+      <div>
+        <div style="font-size: 15px; font-weight: 700; color: #23221e; margin-bottom: 12px;">最近のアップロード</div>
+        <div style="background: #ffffff; border: 1px solid #d6d3d0; border-radius: 8px; overflow: hidden;">
+          <div style="display: grid; grid-template-columns: minmax(0,2.4fr) 1fr 1fr 2fr; background: #edebe8; padding: 10px 18px; font-size: 12px; font-weight: 700; color: #4e4c49;">
+            <div>ファイル名</div>
+            <div>種別</div>
+            <div>アップロード日時</div>
+            <div>状況</div>
+          </div>
+          <sc-for list="{{uploads}}" as="u" hint-placeholder-count="4">
+            <div style="display: grid; grid-template-columns: minmax(0,2.4fr) 1fr 1fr 2fr; align-items: center; padding: 14px 18px; border-top: 1px solid #edebe8;">
+              <div style="font-size: 13px; color: #23221e; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 12px;">{{u.filename}}</div>
+              <div><span style="font-size: 12px; padding: 3px 10px; border-radius: 999px; background: {{u.typeBg}}; color: {{u.typeColor}};">{{u.typeLabel}}</span></div>
+              <div style="font-size: 13px; color: #706d65;">{{u.uploadedAt}}</div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="width: 8px; height: 8px; border-radius: 999px; background: {{u.statusDot}}; flex-shrink: 0;"></span>
+                <span style="font-size: 13px; color: {{u.statusColor}};">{{u.statusLabel}}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{}'>
+class Component extends DCLogic {
+  renderVals() {
+    const suishin = { typeLabel: '推進ニュース', typeBg: '#e7f1fb', typeColor: '#0077c7' };
+    const ganbaru = { typeLabel: 'がんばるニュース', typeBg: '#fff1e0', typeColor: '#b3590a' };
+    return {
+      uploads: [
+        { filename: '推進ニュース2026.08.18.pdf', ...suishin, uploadedAt: '2026-08-18 09:12', statusLabel: '処理中（リライト中 3/5記事）', statusColor: '#0077c7', statusDot: '#0077c7' },
+        { filename: '20260819がんばるニュース.pdf', ...ganbaru, uploadedAt: '2026-08-19 08:40', statusLabel: '完了（12記事を抽出）', statusColor: '#1f7a45', statusDot: '#1f7a45' },
+        { filename: '推進ニュース2026.08.13.pdf', ...suishin, uploadedAt: '2026-08-13 10:02', statusLabel: '完了（8記事を抽出）', statusColor: '#1f7a45', statusDot: '#1f7a45' },
+        { filename: '推進ニュース2026.08.11.pdf', ...suishin, uploadedAt: '2026-08-11 09:55', statusLabel: 'エラー（7ページの画像化に失敗）', statusColor: '#b3134f', statusDot: '#e01e5a' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

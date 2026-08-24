@@ -1,26 +1,95 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8f7f6;
+  --foreground: #23221e;
+
+  --color-hs-primary: #0077c7;
+  --color-hs-primary-dark: #005fa3;
+  --color-hs-danger: #e01e5a;
+  --color-hs-danger-text: #b3134f;
+  --color-hs-danger-bg: #fdeaf0;
+  --color-hs-danger-border: #f6c3d6;
+  --color-hs-warn-text: #7a5c00;
+  --color-hs-warn-bg: #fff8e0;
+  --color-hs-warn-border: #ffe49a;
+  --color-hs-success-text: #1f7a45;
+  --color-hs-success-bg: #e6f6ec;
+  --color-hs-success-border: #bfe8cf;
+  --color-hs-link: #0071c1;
+  --color-hs-link-hover: #005a99;
+
+  --color-hs-text: #23221e;
+  --color-hs-text-secondary: #706d65;
+  --color-hs-text-disabled: #c1bdb7;
+
+  --color-hs-stone-50: #f8f7f6;
+  --color-hs-stone-100: #edebe8;
+  --color-hs-stone-300: #d6d3d0;
+  --color-hs-stone-400: #aaa69f;
+  --color-hs-stone-600: #4e4c49;
+
+  --color-hs-kitatama-text: #0077c7;
+  --color-hs-kitatama-bg: #e7f1fb;
+  --color-hs-kitatama-border: #bcdcf7;
+  --color-hs-nishitokyo-text: #05878c;
+  --color-hs-nishitokyo-bg: #e3f6f6;
+  --color-hs-nishitokyo-border: #b9e6e6;
+  --color-hs-kodaira-text: #b3590a;
+  --color-hs-kodaira-bg: #fff1e0;
+  --color-hs-kodaira-border: #ffd9ad;
+  --color-hs-multiple-text: #6b46c1;
+  --color-hs-multiple-bg: #efe9fb;
+  --color-hs-multiple-border: #d9caf5;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-hs-primary: var(--color-hs-primary);
+  --color-hs-primary-dark: var(--color-hs-primary-dark);
+  --color-hs-danger: var(--color-hs-danger);
+  --color-hs-danger-text: var(--color-hs-danger-text);
+  --color-hs-danger-bg: var(--color-hs-danger-bg);
+  --color-hs-danger-border: var(--color-hs-danger-border);
+  --color-hs-warn-text: var(--color-hs-warn-text);
+  --color-hs-warn-bg: var(--color-hs-warn-bg);
+  --color-hs-warn-border: var(--color-hs-warn-border);
+  --color-hs-success-text: var(--color-hs-success-text);
+  --color-hs-success-bg: var(--color-hs-success-bg);
+  --color-hs-success-border: var(--color-hs-success-border);
+  --color-hs-link: var(--color-hs-link);
+  --color-hs-link-hover: var(--color-hs-link-hover);
+
+  --color-hs-text: var(--color-hs-text);
+  --color-hs-text-secondary: var(--color-hs-text-secondary);
+  --color-hs-text-disabled: var(--color-hs-text-disabled);
+
+  --color-hs-stone-50: var(--color-hs-stone-50);
+  --color-hs-stone-100: var(--color-hs-stone-100);
+  --color-hs-stone-300: var(--color-hs-stone-300);
+  --color-hs-stone-400: var(--color-hs-stone-400);
+  --color-hs-stone-600: var(--color-hs-stone-600);
+
+  --color-hs-kitatama-text: var(--color-hs-kitatama-text);
+  --color-hs-kitatama-bg: var(--color-hs-kitatama-bg);
+  --color-hs-kitatama-border: var(--color-hs-kitatama-border);
+  --color-hs-nishitokyo-text: var(--color-hs-nishitokyo-text);
+  --color-hs-nishitokyo-bg: var(--color-hs-nishitokyo-bg);
+  --color-hs-nishitokyo-border: var(--color-hs-nishitokyo-border);
+  --color-hs-kodaira-text: var(--color-hs-kodaira-text);
+  --color-hs-kodaira-bg: var(--color-hs-kodaira-bg);
+  --color-hs-kodaira-border: var(--color-hs-kodaira-border);
+  --color-hs-multiple-text: var(--color-hs-multiple-text);
+  --color-hs-multiple-bg: var(--color-hs-multiple-bg);
+  --color-hs-multiple-border: var(--color-hs-multiple-border);
+
+  --font-sans: "Yu Gothic Medium", "Yu Gothic", YuGothic, "Hiragino Kaku Gothic ProN", "Hiragino Sans", system-ui, sans-serif;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
 }

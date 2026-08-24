@@ -1,4 +1,15 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ハッシン（Hasshin）
+
+日本共産党北多摩東部地区委員会 宣伝部が使う社内向け編集支援ダッシュボード。
+党内ニュース（PDF）を、Claude APIで構造化抽出・地域タグ付け・一般公開向けリライト・重複検出し、
+北多摩東部／西東京／小平の各HP掲載用記事として編集・承認・書き出しするためのツール。
+
+設計ドキュメント：
+
+- [docs/DATA_MODEL.md](docs/DATA_MODEL.md) — テーブル設計と設計判断
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — リポジトリ構成・非同期処理・デプロイ方針
+
+[Next.js](https://nextjs.org) + TypeScript + Tailwind CSS（[`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app) でブートストラップ）。
 
 ## Getting Started
 

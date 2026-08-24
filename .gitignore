@@ -36,6 +36,11 @@ yarn-error.log*
 # vercel
 .vercel
 
+# 実際の党内ニュースPDFのレンダリング画像・抽出結果（党員限定の内部情報を
+# 含む実データ）。このリポジトリは公開リポジトリのため、ここには含めない。
+# ローカルの動作検証用ディレクトリとして手元にのみ置く。
+/prototype/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

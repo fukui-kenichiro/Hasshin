@@ -1,0 +1,11 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1440, "h": 900, "title": "ログイン" },
+    { "file": "Upload.dc.html", "x": 1480, "y": 0, "w": 1440, "h": 900, "title": "PDFアップロード" },
+    { "file": "Dashboard.dc.html", "x": 2960, "y": 0, "w": 1440, "h": 900, "title": "レビュー待ち記事一覧" },
+    { "file": "ArticleEdit.dc.html", "x": 4440, "y": 0, "w": 1440, "h": 900, "title": "記事編集" },
+    { "file": "Archive.dc.html", "x": 5920, "y": 0, "w": 1440, "h": 900, "title": "アーカイブ" },
+    { "file": "Sidebar.dc.html", "x": 0, "y": 980, "w": 240, "h": 900, "title": "サイドバー（コンポーネント）" }
+  ],
+  "launch": { "view": "canvas" }
+}

@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: "Yu Gothic Medium", "Yu Gothic", YuGothic, "Hiragino Kaku Gothic ProN", "Hiragino Sans", system-ui, sans-serif; }
+    a { color: #0071c1; text-decoration: none; }
+    a:hover { color: #005a99; text-decoration: underline; }
+  </style>
+</helmet>
+<div style="width: 1440px; height: 900px; background: #f8f7f6; display: flex; box-sizing: border-box;">
+
+  <dc-import name="Sidebar" active="dashboard" hint-size="240,900"></dc-import>
+
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; height: 900px; box-sizing: border-box;">
+
+    <div style="padding: 22px 32px; border-bottom: 1px solid #d6d3d0; background: #ffffff; display: flex; align-items: flex-end; justify-content: space-between;">
+      <div>
+        <div style="font-size: 22px; font-weight: 700; color: #23221e;">レビュー待ち記事</div>
+        <div style="font-size: 13px; color: #706d65; margin-top: 4px;">AIが抽出・リライトした記事を確認し、承認・修正してください。</div>
+      </div>
+      <div style="font-size: 13px; color: #706d65;">レビュー待ち <span style="color: #23221e; font-weight: 700;">6</span> 件</div>
+    </div>
+
+    <div style="padding: 16px 32px 0; background: #ffffff; display: flex; gap: 24px; border-bottom: 1px solid #d6d3d0;">
+      <span style="font-size: 14px; font-weight: 700; color: #0077c7; padding-bottom: 12px; border-bottom: 2px solid #0077c7;">レビュー待ち</span>
+      <span style="font-size: 14px; color: #706d65; padding-bottom: 12px;">承認済み</span>
+      <span style="font-size: 14px; color: #706d65; padding-bottom: 12px;">却下</span>
+      <span style="font-size: 14px; color: #706d65; padding-bottom: 12px;">すべて</span>
+    </div>
+
+    <div style="padding: 18px 32px 0; display: flex; gap: 8px; align-items: center;">
+      <span style="font-size: 12px; color: #706d65; margin-right: 4px;">地域:</span>
+      <span style="font-size: 13px; padding: 5px 12px; border-radius: 999px; background: #23221e; color: #ffffff;">すべて</span>
+      <span style="font-size: 13px; padding: 5px 12px; border-radius: 999px; background: #e7f1fb; color: #0077c7; border: 1px solid #bcdcf7;">北多摩東部</span>
+      <span style="font-size: 13px; padding: 5px 12px; border-radius: 999px; background: #e3f6f6; color: #05878c; border: 1px solid #b9e6e6;">西東京</span>
+      <span style="font-size: 13px; padding: 5px 12px; border-radius: 999px; background: #fff1e0; color: #b3590a; border: 1px solid #ffd9ad;">小平</span>
+    </div>
+
+    <div style="flex: 1; overflow: auto; padding: 18px 32px 28px; box-sizing: border-box;">
+      <div style="background: #ffffff; border: 1px solid #d6d3d0; border-radius: 8px; overflow: hidden;">
+        <div style="display: grid; grid-template-columns: minmax(0,3fr) 1.3fr 1fr 1.6fr 1fr; background: #edebe8; padding: 10px 18px; font-size: 12px; font-weight: 700; color: #4e4c49;">
+          <div>タイトル（リライト後）</div>
+          <div>元号・地域</div>
+          <div>地域タグ</div>
+          <div>アラート</div>
+          <div></div>
+        </div>
+        <sc-for list="{{articles}}" as="a" hint-placeholder-count="6">
+          <div style="display: grid; grid-template-columns: minmax(0,3fr) 1.3fr 1fr 1.6fr 1fr; align-items: center; padding: 16px 18px; border-top: 1px solid #edebe8;">
+            <div style="padding-right: 16px; min-width: 0;">
+              <div style="font-size: 14px; color: #23221e; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{a.title}}</div>
+              <div style="font-size: 12px; color: #aaa69f; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{a.snippet}}</div>
+            </div>
+            <div style="font-size: 13px; color: #706d65;">{{a.source}}</div>
+            <div><span style="font-size: 12px; padding: 3px 10px; border-radius: 999px; background: {{a.tagBg}}; color: {{a.tagColor}}; border: 1px solid {{a.tagBorder}}; white-space: nowrap;">{{a.tagLabel}}</span></div>
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+              <sc-if value="{{a.hasDuplicate}}" hint-placeholder-val="{{false}}">
+                <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: #7a5c00;">
+                  <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><path d="M10 3 2 17h16L10 3Z" stroke="#c98a00" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 8.5v3.2M10 14.2v.1" stroke="#c98a00" stroke-width="1.6" stroke-linecap="round"/></svg>
+                  類似記事あり
+                </span>
+              </sc-if>
+              <sc-if value="{{a.hasInternalInfo}}" hint-placeholder-val="{{false}}">
+                <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: #b3134f;">
+                  <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.2" stroke="#e01e5a" stroke-width="1.6"/><path d="M10 6.5v4M10 13v.1" stroke="#e01e5a" stroke-width="1.6" stroke-linecap="round"/></svg>
+                  要確認：内部情報
+                </span>
+              </sc-if>
+            </div>
+            <div style="text-align: right;">
+              <button style="background: #ffffff; color: #0077c7; border: 1px solid #0077c7; border-radius: 6px; padding: 7px 16px; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; white-space: nowrap;">レビューする</button>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{}'>
+class Component extends DCLogic {
+  renderVals() {
+    const kitatama = { tagLabel: '北多摩東部', tagBg: '#e7f1fb', tagColor: '#0077c7', tagBorder: '#bcdcf7' };
+    const nishitokyo = { tagLabel: '西東京', tagBg: '#e3f6f6', tagColor: '#05878c', tagBorder: '#b9e6e6' };
+    const kodaira = { tagLabel: '小平', tagBg: '#fff1e0', tagColor: '#b3590a', tagBorder: '#ffd9ad' };
+    return {
+      articles: [
+        { title: '地域の夏まつりに実行委員として参加', snippet: '推進ニュース 2026.08.18号 / p.2', source: '2026.08.18号', ...kitatama, hasDuplicate: false, hasInternalInfo: false },
+        { title: '西東京市内で防災訓練を実施、住民から関心の声', snippet: '推進ニュース 2026.08.18号 / p.3（西東京関連トピック）', source: '2026.08.18号', ...nishitokyo, hasDuplicate: true, hasInternalInfo: true },
+        { title: '商店街の街灯LED化、地元業者と協力', snippet: '推進ニュース 2026.08.13号 / p.1', source: '2026.08.13号', ...kitatama, hasDuplicate: false, hasInternalInfo: false },
+        { title: '平和のつどいを開催、地域住民との対話進む', snippet: '推進ニュース 2026.08.13号 / p.4', source: '2026.08.13号', ...kitatama, hasDuplicate: true, hasInternalInfo: false },
+        { title: '子育て支援制度について懇談会を開催', snippet: 'がんばるニュース 2026.08.19号 / p.2', source: '2026.08.19号', ...kodaira, hasDuplicate: false, hasInternalInfo: true },
+        { title: '西東京市議会 一般質問の報告', snippet: '推進ニュース 2026.08.11号 / p.2（西東京関連トピック）', source: '2026.08.11号', ...nishitokyo, hasDuplicate: false, hasInternalInfo: false },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

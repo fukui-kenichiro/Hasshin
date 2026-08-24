@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: "Yu Gothic Medium", "Yu Gothic", YuGothic, "Hiragino Kaku Gothic ProN", "Hiragino Sans", system-ui, sans-serif; }
+    a { color: #0071c1; text-decoration: none; }
+    a:hover { color: #005a99; text-decoration: underline; }
+  </style>
+</helmet>
+<div style="width: 240px; height: 900px; background: #ffffff; border-right: 1px solid #d6d3d0; display: flex; flex-direction: column; box-sizing: border-box;">
+
+  <div style="display: flex; align-items: center; gap: 10px; padding: 24px 20px; border-bottom: 1px solid #d6d3d0;">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <circle cx="14" cy="14" r="4" fill="#0077c7"/>
+      <path d="M9 9 A 8 8 0 0 0 9 19" stroke="#0077c7" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <path d="M19 9 A 8 8 0 0 1 19 19" stroke="#0077c7" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <path d="M5.5 5.5 A 13 13 0 0 0 5.5 22.5" stroke="#aaa69f" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+      <path d="M22.5 5.5 A 13 13 0 0 1 22.5 22.5" stroke="#aaa69f" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+    </svg>
+    <div style="display: flex; flex-direction: column; line-height: 1.2;">
+      <span style="font-size: 17px; font-weight: 700; color: #23221e;">ハッシン</span>
+      <span style="font-size: 11px; color: #706d65;">北多摩東部地区委員会 宣伝部</span>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 4px; padding: 16px 12px;">
+    <a href="#" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; background: {{dashboardBg}}; color: {{dashboardColor}}; font-weight: {{dashboardWeight}}; font-size: 14px;">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="6" height="6" rx="1.2" stroke="currentColor" stroke-width="1.6"/><rect x="11" y="3" width="6" height="6" rx="1.2" stroke="currentColor" stroke-width="1.6"/><rect x="3" y="11" width="6" height="6" rx="1.2" stroke="currentColor" stroke-width="1.6"/><rect x="11" y="11" width="6" height="6" rx="1.2" stroke="currentColor" stroke-width="1.6"/></svg>
+      レビュー待ち記事
+      <sc-if value="{{showBadge}}" hint-placeholder-val="{{true}}">
+        <span style="margin-left: auto; background: #e01e5a; color: #ffffff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px;">{{badgeCount}}</span>
+      </sc-if>
+    </a>
+    <a href="#" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; background: {{uploadBg}}; color: {{uploadColor}}; font-weight: {{uploadWeight}}; font-size: 14px;">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 13V4M10 4L6.5 7.5M10 4l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 13.5v1.8a1.7 1.7 0 0 0 1.7 1.7h8.6a1.7 1.7 0 0 0 1.7-1.7v-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      PDFアップロード
+    </a>
+    <a href="#" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; background: {{archiveBg}}; color: {{archiveColor}}; font-weight: {{archiveWeight}}; font-size: 14px;">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="3" y="4" width="14" height="4" rx="1" stroke="currentColor" stroke-width="1.6"/><path d="M4.5 8v6.3A1.7 1.7 0 0 0 6.2 16h7.6a1.7 1.7 0 0 0 1.7-1.7V8" stroke="currentColor" stroke-width="1.6"/><path d="M8.2 11h3.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      アーカイブ
+    </a>
+  </div>
+
+  <div style="margin-top: auto; padding: 16px 20px; border-top: 1px solid #d6d3d0; display: flex; align-items: center; gap: 10px;">
+    <div style="width: 32px; height: 32px; border-radius: 999px; background: #edebe8; color: #4e4c49; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">{{userInitial}}</div>
+    <div style="display: flex; flex-direction: column; line-height: 1.3; min-width: 0;">
+      <span style="font-size: 13px; color: #23221e; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{userName}}</span>
+      <a href="#" style="font-size: 12px; color: #706d65;">ログアウト</a>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"active":{"editor":"enum","default":"dashboard","options":["dashboard","upload","archive"]},"userName":{"editor":"text","default":"宣伝部 編集担当"},"badgeCount":{"editor":"int","default":6},"$preview":{"width":240,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const active = this.props.active ?? 'dashboard';
+    const on = { bg: '#e7f1fb', color: '#0077c7', weight: '700' };
+    const off = { bg: 'transparent', color: '#4e4c49', weight: '400' };
+    const d = active === 'dashboard' ? on : off;
+    const u = active === 'upload' ? on : off;
+    const a = active === 'archive' ? on : off;
+    return {
+      dashboardBg: d.bg, dashboardColor: d.color, dashboardWeight: d.weight,
+      uploadBg: u.bg, uploadColor: u.color, uploadWeight: u.weight,
+      archiveBg: a.bg, archiveColor: a.color, archiveWeight: a.weight,
+      showBadge: (this.props.badgeCount ?? 0) > 0,
+      badgeCount: this.props.badgeCount ?? 6,
+      userName: this.props.userName ?? '宣伝部 編集担当',
+      userInitial: (this.props.userName ?? '宣')[0],
+    };
+  }
+}
+</script>
+</body>
+</html>

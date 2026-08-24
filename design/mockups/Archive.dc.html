@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: "Yu Gothic Medium", "Yu Gothic", YuGothic, "Hiragino Kaku Gothic ProN", "Hiragino Sans", system-ui, sans-serif; }
+    a { color: #0071c1; text-decoration: none; }
+    a:hover { color: #005a99; text-decoration: underline; }
+  </style>
+</helmet>
+<div style="width: 1440px; height: 900px; background: #f8f7f6; display: flex; box-sizing: border-box;">
+
+  <dc-import name="Sidebar" active="archive" hint-size="240,900"></dc-import>
+
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; height: 900px; box-sizing: border-box;">
+
+    <div style="padding: 22px 32px; border-bottom: 1px solid #d6d3d0; background: #ffffff;">
+      <div style="font-size: 22px; font-weight: 700; color: #23221e;">アーカイブ</div>
+      <div style="font-size: 13px; color: #706d65; margin-top: 4px;">承認・公開済みの記事を地域別・日付別に確認できます。</div>
+    </div>
+
+    <div style="padding: 18px 32px 0; display: flex; gap: 12px;">
+      <div style="flex: 1; background: #ffffff; border: 1px solid #d6d3d0; border-radius: 8px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-size: 13px; color: #706d65;">北多摩東部HP</span>
+        <span style="font-size: 20px; font-weight: 700; color: #0077c7;">24<span style="font-size: 12px; color: #aaa69f; font-weight: 400;"> 件</span></span>
+      </div>
+      <div style="flex: 1; background: #ffffff; border: 1px solid #d6d3d0; border-radius: 8px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-size: 13px; color: #706d65;">西東京HP</span>
+        <span style="font-size: 20px; font-weight: 700; color: #05878c;">9<span style="font-size: 12px; color: #aaa69f; font-weight: 400;"> 件</span></span>
+      </div>
+      <div style="flex: 1; background: #ffffff; border: 1px solid #d6d3d0; border-radius: 8px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-size: 13px; color: #706d65;">小平HP</span>
+        <span style="font-size: 20px; font-weight: 700; color: #b3590a;">31<span style="font-size: 12px; color: #aaa69f; font-weight: 400;"> 件</span></span>
+      </div>
+    </div>
+
+    <div style="padding: 18px 32px 0; display: flex; gap: 10px; align-items: center;">
+      <span style="font-size: 13px; padding: 5px 12px; border-radius: 999px; background: #23221e; color: #ffffff;">すべての地域</span>
+      <span style="font-size: 13px; padding: 5px 12px; border-radius: 999px; background: #e7f1fb; color: #0077c7; border: 1px solid #bcdcf7;">北多摩東部</span>
+      <span style="font-size: 13px; padding: 5px 12px; border-radius: 999px; background: #e3f6f6; color: #05878c; border: 1px solid #b9e6e6;">西東京</span>
+      <span style="font-size: 13px; padding: 5px 12px; border-radius: 999px; background: #fff1e0; color: #b3590a; border: 1px solid #ffd9ad;">小平</span>
+
+      <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
+        <div style="display: flex; align-items: center; gap: 6px; background: #ffffff; border: 1px solid #d6d3d0; border-radius: 6px; padding: 7px 12px;">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><rect x="3" y="4.5" width="14" height="12" rx="1.4" stroke="#706d65" stroke-width="1.5"/><path d="M3 8.5h14" stroke="#706d65" stroke-width="1.5"/><path d="M7 3v3M13 3v3" stroke="#706d65" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span style="font-size: 13px; color: #23221e;">2026年7月 〜 2026年8月</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px; background: #ffffff; border: 1px solid #d6d3d0; border-radius: 6px; padding: 7px 12px; width: 220px;">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><circle cx="8.5" cy="8.5" r="5" stroke="#706d65" stroke-width="1.5"/><path d="M12.5 12.5 17 17" stroke="#706d65" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span style="font-size: 13px; color: #aaa69f;">記事を検索</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex: 1; overflow: auto; padding: 18px 32px 28px; box-sizing: border-box;">
+      <div style="background: #ffffff; border: 1px solid #d6d3d0; border-radius: 8px; overflow: hidden;">
+        <div style="display: grid; grid-template-columns: 1fr minmax(0,3fr) 1fr 1fr 1.4fr; background: #edebe8; padding: 10px 18px; font-size: 12px; font-weight: 700; color: #4e4c49;">
+          <div>掲載日</div>
+          <div>タイトル</div>
+          <div>地域</div>
+          <div>掲載先</div>
+          <div>書き出し</div>
+        </div>
+        <sc-for list="{{items}}" as="it" hint-placeholder-count="8">
+          <div style="display: grid; grid-template-columns: 1fr minmax(0,3fr) 1fr 1fr 1.4fr; align-items: center; padding: 14px 18px; border-top: 1px solid #edebe8;">
+            <div style="font-size: 13px; color: #706d65;">{{it.date}}</div>
+            <div style="font-size: 13px; color: #23221e; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 12px;">{{it.title}}</div>
+            <div><span style="font-size: 12px; padding: 3px 10px; border-radius: 999px; background: {{it.tagBg}}; color: {{it.tagColor}}; border: 1px solid {{it.tagBorder}};">{{it.tagLabel}}</span></div>
+            <div style="font-size: 13px; color: #706d65;">{{it.site}}</div>
+            <div style="display: flex; gap: 6px;">
+              <span style="font-size: 11px; padding: 3px 8px; border-radius: 5px; background: #edebe8; color: #4e4c49; font-weight: 700;">HTML</span>
+              <span style="font-size: 11px; padding: 3px 8px; border-radius: 5px; background: #edebe8; color: #4e4c49; font-weight: 700;">MD</span>
+              <span style="font-size: 11px; padding: 3px 8px; border-radius: 5px; background: #edebe8; color: #4e4c49; font-weight: 700;">TXT</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{}'>
+class Component extends DCLogic {
+  renderVals() {
+    const kitatama = { tagLabel: '北多摩東部', tagBg: '#e7f1fb', tagColor: '#0077c7', tagBorder: '#bcdcf7', site: '北多摩東部HP' };
+    const nishitokyo = { tagLabel: '西東京', tagBg: '#e3f6f6', tagColor: '#05878c', tagBorder: '#b9e6e6', site: '西東京HP' };
+    const kodaira = { tagLabel: '小平', tagBg: '#fff1e0', tagColor: '#b3590a', tagBorder: '#ffd9ad', site: '小平HP' };
+    return {
+      items: [
+        { date: '2026-08-10', title: '西東京市内の公園で朝市を開催', ...nishitokyo },
+        { date: '2026-08-05', title: '地域の盆踊り大会に多数が参加', ...kodaira },
+        { date: '2026-08-01', title: '地域清掃活動、住民ら50人が参加', ...kitatama },
+        { date: '2026-07-31', title: '夏休みこども食堂、今年も開催', ...kodaira },
+        { date: '2026-07-27', title: '団地の交流会、世代を超えて対話', ...kitatama },
+        { date: '2026-07-20', title: '地域防災訓練への参加を呼びかけます', ...nishitokyo },
+        { date: '2026-07-18', title: '花畑公園の遊具改修が完了', ...kodaira },
+        { date: '2026-07-17', title: '駅前放置自転車、対策を住民と検討', ...kitatama },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>
