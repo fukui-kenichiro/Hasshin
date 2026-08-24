@@ -31,7 +31,13 @@ function sb() {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function toSite(row: any): Site {
-  return { id: row.id, slug: row.slug, name: row.name };
+  return {
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    baseUrl: row.base_url ?? null,
+    wpApiKey: row.wp_api_key ?? null,
+  };
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -90,6 +96,11 @@ function toArticle(row: any): Article {
     targetSiteSlug: row.target_site?.slug ?? null,
     derivedFromArticleId: row.derived_from_article_id,
     status: row.status,
+    wpPostId: row.wp_post_id ?? null,
+    wpPostUrl: row.wp_post_url ?? null,
+    wpPublishStatus: row.wp_publish_status ?? "not_sent",
+    wpPublishError: row.wp_publish_error ?? null,
+    wpPublishedAt: row.wp_published_at ?? null,
     reviewedBy: row.reviewed_by,
     reviewedAt: row.reviewed_at,
     approvedBy: row.approved_by,
@@ -232,6 +243,24 @@ async function getSiteIdBySlug(slug: string | null): Promise<string | null> {
   if (!slug) return null;
   const { data } = await sb().from("sites").select("id").eq("slug", slug).maybeSingle();
   return data?.id ?? null;
+}
+
+export async function getSiteBySlug(slug: SiteSlug_): Promise<Site | null> {
+  const { data } = await sb().from("sites").select("*").eq("slug", slug).maybeSingle();
+  return data ? toSite(data) : null;
+}
+
+export async function updateSite(
+  id: string,
+  patch: Partial<{ baseUrl: string | null; wpApiKey: string | null }>
+): Promise<Site | null> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const update: any = {};
+  if (patch.baseUrl !== undefined) update.base_url = patch.baseUrl;
+  if (patch.wpApiKey !== undefined) update.wp_api_key = patch.wpApiKey;
+  const { data, error } = await sb().from("sites").update(update).eq("id", id).select().maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? toSite(data) : null;
 }
 
 // ---- Source documents ----
@@ -421,6 +450,11 @@ export async function updateArticle(id: string, patch: Partial<Article>): Promis
   if (patch.reviewedAt !== undefined) update.reviewed_at = patch.reviewedAt;
   if (patch.approvedBy !== undefined) update.approved_by = patch.approvedBy;
   if (patch.approvedAt !== undefined) update.approved_at = patch.approvedAt;
+  if (patch.wpPostId !== undefined) update.wp_post_id = patch.wpPostId;
+  if (patch.wpPostUrl !== undefined) update.wp_post_url = patch.wpPostUrl;
+  if (patch.wpPublishStatus !== undefined) update.wp_publish_status = patch.wpPublishStatus;
+  if (patch.wpPublishError !== undefined) update.wp_publish_error = patch.wpPublishError;
+  if (patch.wpPublishedAt !== undefined) update.wp_published_at = patch.wpPublishedAt;
 
   const { data, error } = await sb()
     .from("articles")
@@ -452,6 +486,16 @@ export async function setArticleRegionTag(
     .eq("id", id);
 }
 type SiteSlug_ = "kitatama-tobu" | "nishitokyo" | "kodaira";
+
+// 記事の完全削除（重大な個人情報の混入など、事故対応のための機能）。
+// 承認・却下いずれの状態からでも実行できる。内部情報フラグ・重複フラグ・
+// 版履歴・関連ジョブは外部キーの on delete cascade で連動して消える。
+// WordPress側に既に下書きが送信済みの場合、その削除は呼び出し側
+// （API route）がプラグインのDELETEエンドポイントを呼んで別途行う。
+export async function deleteArticle(id: string): Promise<void> {
+  const { error } = await sb().from("articles").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
 
 // ---- Internal info flags ----
 

@@ -7,6 +7,8 @@ export interface Site {
   id: string;
   slug: SiteSlug;
   name: string;
+  baseUrl: string | null;
+  wpApiKey: string | null;
 }
 
 export interface User {
@@ -72,6 +74,8 @@ export type RegionTag =
 
 export type ArticleStatus = "pending_review" | "approved" | "rejected" | "exported";
 
+export type WpPublishStatus = "not_sent" | "pending" | "sent" | "error" | "blocked";
+
 export type PublicSuitability =
   | "rewrite_candidate"
   | "not_suitable_internal_only"
@@ -100,6 +104,12 @@ export interface Article {
   derivedFromArticleId: string | null;
 
   status: ArticleStatus;
+
+  wpPostId: string | null;
+  wpPostUrl: string | null;
+  wpPublishStatus: WpPublishStatus;
+  wpPublishError: string | null;
+  wpPublishedAt: string | null;
 
   reviewedBy: string | null;
   reviewedAt: string | null;
@@ -156,7 +166,8 @@ export type JobType =
   | "assemble_articles"
   | "tag_region"
   | "rewrite"
-  | "detect_duplicates";
+  | "detect_duplicates"
+  | "publish_to_wp";
 
 export type JobStatus = "pending" | "in_progress" | "done" | "error" | "retrying";
 

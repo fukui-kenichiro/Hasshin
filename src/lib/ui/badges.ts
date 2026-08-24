@@ -3,6 +3,7 @@ import type {
   DuplicateFlagType,
   PublicSuitability,
   RegionTag,
+  WpPublishStatus,
 } from "@/lib/types/domain";
 
 export const REGION_LABEL: Record<RegionTag, string> = {
@@ -50,4 +51,20 @@ export const SUITABILITY_BADGE_CLASS: Record<PublicSuitability, string> = {
 export const DUPLICATE_FLAG_LABEL: Record<DuplicateFlagType, string> = {
   duplicate_content: "重複記事",
   recycled_appeal: "類似の呼びかけの繰り返し",
+};
+
+export const WP_PUBLISH_STATUS_LABEL: Record<WpPublishStatus, string> = {
+  not_sent: "未送信",
+  pending: "送信中…",
+  sent: "WordPressに送信ずみ（下書き）",
+  error: "送信に失敗しました",
+  blocked: "送信できません",
+};
+
+export const WP_PUBLISH_STATUS_BADGE_CLASS: Record<WpPublishStatus, string> = {
+  not_sent: "bg-hs-stone-100 text-hs-text-secondary border-hs-stone-300",
+  pending: "bg-hs-warn-bg text-hs-warn-text border-hs-warn-border",
+  sent: "bg-hs-success-bg text-hs-success-text border-hs-success-border",
+  error: "bg-hs-danger-bg text-hs-danger-text border-hs-danger-border",
+  blocked: "bg-hs-danger-bg text-hs-danger-text border-hs-danger-border",
 };

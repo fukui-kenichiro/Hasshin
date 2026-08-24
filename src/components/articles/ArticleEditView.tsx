@@ -18,6 +18,8 @@ import {
   STATUS_LABEL,
   SUITABILITY_BADGE_CLASS,
   SUITABILITY_LABEL,
+  WP_PUBLISH_STATUS_BADGE_CLASS,
+  WP_PUBLISH_STATUS_LABEL,
 } from "@/lib/ui/badges";
 import { buildHighlightSegments } from "@/lib/ui/highlight";
 import { FriendlyError } from "@/components/ui/FriendlyError";
@@ -65,6 +67,10 @@ export function ArticleEditView({
   const [draftTitle, setDraftTitle] = useState(article.titleRewritten ?? "");
   const [draftBody, setDraftBody] = useState(article.bodyRewritten ?? "");
   const [isSaving, setIsSaving] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteWarning, setDeleteWarning] = useState<string | null>(null);
 
   const unresolvedCount = internalInfoFlags.filter((f) => f.status === "unresolved").length;
   const openDuplicates = duplicateFlags.filter((f) => f.status === "open");
@@ -81,11 +87,56 @@ export function ArticleEditView({
     return res;
   }
 
+  // 承認直後にWordPressへの送信ジョブが積まれるので、
+  // ジョブキューを数回叩いて処理を進めておく（放っておいても
+  // 巡回ジョブでいずれ処理されるが、すぐに結果を見せたいため）。
+  async function drainJobTicks(times: number) {
+    for (let i = 0; i < times; i++) {
+      try {
+        await fetch("/api/jobs/tick", { method: "POST" });
+      } catch {
+        break;
+      }
+    }
+  }
+
   async function handleApprove() {
     await callApi(`/api/articles/${article.id}/approve`, { method: "POST" });
+    await drainJobTicks(3);
+    refresh();
   }
   async function handleReject() {
     await callApi(`/api/articles/${article.id}/reject`, { method: "POST" });
+  }
+  async function handleResendToWp() {
+    setIsResending(true);
+    try {
+      await callApi(`/api/articles/${article.id}/publish-to-wp`, { method: "POST" });
+      await drainJobTicks(3);
+      refresh();
+    } finally {
+      setIsResending(false);
+    }
+  }
+  async function handleDeleteForever() {
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/articles/${article.id}`, { method: "DELETE" });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        if (data.warning) {
+          setDeleteWarning(data.warning);
+          setIsDeleting(false);
+          return;
+        }
+        router.push(`/?status=${fromStatus}`);
+        router.refresh();
+      } else {
+        setIsDeleting(false);
+      }
+    } catch {
+      setIsDeleting(false);
+    }
   }
   async function handleRegionChange(regionTag: RegionTag) {
     await callApi(`/api/articles/${article.id}`, {
@@ -159,6 +210,23 @@ export function ArticleEditView({
   const segments = article.bodyRewritten
     ? buildHighlightSegments(article.bodyRewritten, internalInfoFlags)
     : [];
+
+  if (deleteWarning) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center gap-4 px-8 text-center">
+        <div className="text-[16px] font-bold text-hs-text">この記事はハッシンから完全に削除されました。</div>
+        <div className="max-w-md rounded-md border border-hs-warn-border bg-hs-warn-bg px-4 py-3 text-[13px] leading-relaxed text-hs-warn-text">
+          {deleteWarning}
+        </div>
+        <Link
+          href={`/?status=${fromStatus}`}
+          className="rounded-md bg-hs-primary px-4 py-2 text-[13px] font-bold text-white hover:bg-hs-primary-dark"
+        >
+          一覧に戻る
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
@@ -402,6 +470,50 @@ export function ArticleEditView({
             )}
           </div>
 
+          {isApprovedOrExported && (
+            <div className="rounded-lg border border-hs-stone-300 bg-white p-4">
+              <div className="mb-2.5 flex items-center justify-between">
+                <span className="text-[12px] font-bold text-hs-stone-600">WordPressへの送信</span>
+                <span
+                  className={
+                    "rounded-full border px-2 py-0.5 text-[11px] " +
+                    WP_PUBLISH_STATUS_BADGE_CLASS[article.wpPublishStatus]
+                  }
+                >
+                  {WP_PUBLISH_STATUS_LABEL[article.wpPublishStatus]}
+                </span>
+              </div>
+
+              {article.wpPublishStatus === "sent" && article.wpPostUrl && (
+                <a
+                  href={article.wpPostUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[12px] text-hs-link underline"
+                >
+                  WordPressの下書きを確認する →
+                </a>
+              )}
+
+              {(article.wpPublishStatus === "error" || article.wpPublishStatus === "blocked") &&
+                article.wpPublishError && (
+                  <div className="mb-2 text-[11px] leading-relaxed text-hs-danger-text">
+                    {article.wpPublishError}
+                  </div>
+                )}
+
+              {article.wpPublishStatus !== "pending" && (
+                <button
+                  onClick={handleResendToWp}
+                  disabled={isResending}
+                  className="mt-1 rounded border border-hs-stone-300 px-3 py-1.5 text-[11px] font-bold text-hs-text-secondary hover:bg-hs-stone-50 disabled:opacity-50"
+                >
+                  {isResending ? "送信中…" : article.wpPublishStatus === "sent" ? "再送信する" : "送信する"}
+                </button>
+              )}
+            </div>
+          )}
+
           <div className="rounded-lg border border-hs-stone-300 bg-white p-4">
             <div className="mb-2.5 flex items-center justify-between">
               <span className="text-[12px] font-bold text-hs-stone-600">内部情報の確認</span>
@@ -463,6 +575,43 @@ export function ArticleEditView({
             <div className="mt-3 text-[11px] leading-relaxed text-hs-stone-400">
               確認していない項目が残っている間は、書き出しができません。
             </div>
+          </div>
+
+          <div className="rounded-lg border border-hs-danger-border bg-white p-4">
+            <div className="mb-1.5 text-[12px] font-bold text-hs-danger-text">完全削除</div>
+            <div className="mb-2.5 text-[11px] leading-relaxed text-hs-stone-400">
+              重大な個人情報などが含まれていた場合の事故対応用です。承認・却下・書き出しずみかに関わらず、この記事をハッシンから完全に削除します（元に戻せません）。WordPressに下書きを送信ずみの場合は、その下書きも一緒に削除します。
+            </div>
+            {!confirmingDelete ? (
+              <button
+                onClick={() => setConfirmingDelete(true)}
+                className="rounded border border-hs-danger px-3 py-1.5 text-[11px] font-bold text-hs-danger hover:bg-hs-danger-bg"
+              >
+                この記事を完全に削除する
+              </button>
+            ) : (
+              <div className="flex flex-col gap-2 rounded-md border border-hs-danger-border bg-hs-danger-bg p-2.5">
+                <div className="text-[11px] font-bold text-hs-danger-text">
+                  本当に完全に削除しますか？この操作は元に戻せません。
+                </div>
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={handleDeleteForever}
+                    disabled={isDeleting}
+                    className="flex-1 rounded bg-hs-danger px-2 py-1.5 text-[11px] font-bold text-white disabled:opacity-50"
+                  >
+                    {isDeleting ? "削除中…" : "完全に削除する"}
+                  </button>
+                  <button
+                    onClick={() => setConfirmingDelete(false)}
+                    disabled={isDeleting}
+                    className="flex-1 rounded border border-hs-stone-300 bg-white px-2 py-1.5 text-[11px] text-hs-text-secondary"
+                  >
+                    キャンセル
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

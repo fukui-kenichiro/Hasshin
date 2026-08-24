@@ -23,8 +23,10 @@ import {
   createSourcePages,
   enqueueJob,
   getArticleById,
+  getSiteBySlug,
   getSourceDocumentById,
   getSourcePageById,
+  hasUnresolvedInternalInfo,
   listDuplicateCandidates,
   listGlossaryTerms,
   listSourcePages,
@@ -311,6 +313,79 @@ async function handleDetectDuplicates(job: ProcessingJob): Promise<void> {
   );
 }
 
+// 承認された記事を、掲載先サイトのWordPressへ下書きとして送信する。
+// 送信できない理由がユーザー起因（未確認の内部情報がある・サイト未接続等）の
+// 場合は wp_publish_status を "blocked" にして正常終了する（リトライしても
+// 無駄なため）。WordPress側との通信エラーなど一時的な失敗は例外を投げ、
+// 通常のジョブリトライに任せる。
+async function handlePublishToWp(job: ProcessingJob): Promise<void> {
+  const articleId = job.relatedArticleId;
+  if (!articleId) throw new Error("publish_to_wp: relatedArticleId がありません");
+  const article = await getArticleById(articleId);
+  if (!article) throw new Error("対象の記事が見つかりません");
+
+  async function block(reason: string) {
+    await updateArticle(articleId!, { wpPublishStatus: "blocked", wpPublishError: reason });
+  }
+
+  if (!article.titleRewritten || !article.bodyRewritten) {
+    await block("書き直し後の文章がまだありません。");
+    return;
+  }
+  if (await hasUnresolvedInternalInfo(articleId)) {
+    await block("未確認の内部情報が残っているため送信できません。先に内部情報を確認してください。");
+    return;
+  }
+  if (!article.targetSiteSlug) {
+    await block("掲載先のサイトが決まっていません。");
+    return;
+  }
+  const site = await getSiteBySlug(article.targetSiteSlug);
+  if (!site || !site.baseUrl || !site.wpApiKey) {
+    await block(`このサイトのWordPress接続設定がまだありません。設定画面で接続情報を登録してください。`);
+    return;
+  }
+
+  await updateArticle(articleId, { wpPublishStatus: "pending" });
+
+  const doc = await getSourceDocumentById(article.sourceDocumentId);
+  const endpoint = `${site.baseUrl.replace(/\/$/, "")}/wp-json/hasshin/v1/articles`;
+
+  let res: Response;
+  try {
+    res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Hasshin-Api-Key": site.wpApiKey },
+      body: JSON.stringify({
+        hasshin_article_id: article.id,
+        title: article.titleRewritten,
+        body: article.bodyRewritten,
+        source_note: doc?.originalFilename ?? "",
+      }),
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    await updateArticle(articleId, { wpPublishStatus: "error", wpPublishError: `接続できませんでした: ${message}` });
+    throw new Error(`WordPressへの接続に失敗しました: ${message}`);
+  }
+
+  if (!res.ok) {
+    const bodyText = await res.text().catch(() => "");
+    const message = `WordPress側でエラーが発生しました（HTTP ${res.status}）: ${bodyText.slice(0, 300)}`;
+    await updateArticle(articleId, { wpPublishStatus: "error", wpPublishError: message });
+    throw new Error(message);
+  }
+
+  const data = (await res.json()) as { post_id: number | string; edit_url: string };
+  await updateArticle(articleId, {
+    wpPostId: String(data.post_id),
+    wpPostUrl: data.edit_url,
+    wpPublishStatus: "sent",
+    wpPublishError: null,
+    wpPublishedAt: new Date().toISOString(),
+  });
+}
+
 const HANDLERS: Record<ProcessingJob["jobType"], (job: ProcessingJob) => Promise<void>> = {
   render_pages: handleRenderPages,
   extract_page: handleExtractPage,
@@ -318,6 +393,7 @@ const HANDLERS: Record<ProcessingJob["jobType"], (job: ProcessingJob) => Promise
   tag_region: handleTagRegion,
   rewrite: handleRewrite,
   detect_duplicates: handleDetectDuplicates,
+  publish_to_wp: handlePublishToWp,
 };
 
 export interface TickResult {

@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { getSourceDocumentById, listArticles, listSites } from "@/lib/data/store";
-import { REGION_BADGE_CLASS, REGION_LABEL } from "@/lib/ui/badges";
+import {
+  REGION_BADGE_CLASS,
+  REGION_LABEL,
+  WP_PUBLISH_STATUS_BADGE_CLASS,
+  WP_PUBLISH_STATUS_LABEL,
+} from "@/lib/ui/badges";
 import type { RegionTag } from "@/lib/types/domain";
 
 const REGION_FILTERS: { value: RegionTag | "all"; label: string }[] = [
@@ -118,8 +123,15 @@ export default async function ArchivePage({
                     {REGION_LABEL[article.regionTag]}
                   </span>
                 </div>
-                <div className="text-[13px] text-hs-text-secondary">
-                  {article.status === "exported" ? "書き出しずみ" : "承認ずみ（まだ書き出していません）"}
+                <div>
+                  <span
+                    className={
+                      "rounded-full border px-2.5 py-0.5 text-[12px] " +
+                      WP_PUBLISH_STATUS_BADGE_CLASS[article.wpPublishStatus]
+                    }
+                  >
+                    {WP_PUBLISH_STATUS_LABEL[article.wpPublishStatus]}
+                  </span>
                 </div>
               </Link>
             );

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/session";
-import { getArticleById, updateArticle } from "@/lib/data/store";
+import { enqueueJob, getArticleById, updateArticle } from "@/lib/data/store";
 
 export async function POST(
   _request: Request,
@@ -21,6 +21,9 @@ export async function POST(
     reviewedBy: user.id,
     reviewedAt: now,
   });
+
+  // 承認と同時に、掲載先サイトのWordPressへ下書きとして自動送信するジョブを積む。
+  await enqueueJob({ jobType: "publish_to_wp", relatedArticleId: id });
 
   return NextResponse.json({ article: updated });
 }
