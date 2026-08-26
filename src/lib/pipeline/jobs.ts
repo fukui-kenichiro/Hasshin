@@ -15,6 +15,7 @@
 import { getClaudeClient, EXTRACTION_MODEL } from "@/lib/ai/claude";
 import { rasterizePdfToPngPages } from "@/lib/pdf/rasterize";
 import { downloadFile, uploadPageImage } from "@/lib/storage/files";
+import { buildWpEndpoint } from "@/lib/wp/client";
 import {
   addDuplicateFlags,
   addInternalInfoFlags,
@@ -349,7 +350,7 @@ async function handlePublishToWp(job: ProcessingJob): Promise<void> {
   await updateArticle(articleId, { wpPublishStatus: "pending" });
 
   const doc = await getSourceDocumentById(article.sourceDocumentId);
-  const endpoint = `${site.baseUrl.replace(/\/$/, "")}/wp-json/hasshin/v1/articles`;
+  const endpoint = buildWpEndpoint(site.baseUrl, "/hasshin/v1/articles");
 
   let res: Response;
   try {

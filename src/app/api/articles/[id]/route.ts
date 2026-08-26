@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/session";
 import { deleteArticle, getArticleById, getSiteBySlug, updateArticle } from "@/lib/data/store";
+import { buildWpEndpoint } from "@/lib/wp/client";
 import type { Article, RegionTag } from "@/lib/types/domain";
 
 const VALID_REGION_TAGS: RegionTag[] = [
@@ -74,7 +75,7 @@ export async function DELETE(
     const site = await getSiteBySlug(article.targetSiteSlug);
     if (site?.baseUrl && site.wpApiKey) {
       try {
-        const endpoint = `${site.baseUrl.replace(/\/$/, "")}/wp-json/hasshin/v1/articles/${id}`;
+        const endpoint = buildWpEndpoint(site.baseUrl, `/hasshin/v1/articles/${id}`);
         const res = await fetch(endpoint, {
           method: "DELETE",
           headers: { "X-Hasshin-Api-Key": site.wpApiKey },
