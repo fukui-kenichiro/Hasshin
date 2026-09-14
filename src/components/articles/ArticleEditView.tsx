@@ -94,10 +94,14 @@ export function ArticleEditView({
   // 承認直後にWordPressへの送信ジョブが積まれるので、
   // ジョブキューを数回叩いて処理を進めておく（放っておいても
   // 巡回ジョブでいずれ処理されるが、すぐに結果を見せたいため）。
-  async function drainJobTicks(times: number) {
-    for (let i = 0; i < times; i++) {
+  // 溜まっているジョブが多いと、自分が積んだジョブの順番が回ってくるまでに
+  // 何回かtickを呼ぶ必要がある。空振り（処理対象なし）が続いたら早めに切り上げる。
+  async function drainJobTicks(maxTicks: number) {
+    for (let i = 0; i < maxTicks; i++) {
       try {
-        await fetch("/api/jobs/tick", { method: "POST" });
+        const res = await fetch("/api/jobs/tick", { method: "POST" });
+        const data = await res.json().catch(() => ({ processed: false }));
+        if (data.processed === false) break;
       } catch {
         break;
       }
@@ -106,7 +110,7 @@ export function ArticleEditView({
 
   async function handleApprove() {
     await callApi(`/api/articles/${article.id}/approve`, { method: "POST" });
-    await drainJobTicks(3);
+    await drainJobTicks(15);
     refresh();
   }
   async function handleReject() {
@@ -116,7 +120,7 @@ export function ArticleEditView({
     setIsResending(true);
     try {
       await callApi(`/api/articles/${article.id}/publish-to-wp`, { method: "POST" });
-      await drainJobTicks(3);
+      await drainJobTicks(15);
       refresh();
     } finally {
       setIsResending(false);
@@ -139,7 +143,7 @@ export function ArticleEditView({
         setForceRewriteError("リライトの開始に失敗しました。もう一度お試しください。");
         return;
       }
-      await drainJobTicks(3);
+      await drainJobTicks(15);
       setShowForceRewrite(false);
       setRewriteCondition("");
       refresh();
