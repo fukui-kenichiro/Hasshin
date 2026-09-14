@@ -81,13 +81,24 @@ async function callClaudeTool<T>(system: string, userContent: unknown, tool: Too
   const client = getClaudeClient();
   const message = await client.messages.create({
     model: EXTRACTION_MODEL,
-    max_tokens: 4096,
+    // 内容量の多いPDF（本文が長い記事や複数記事の一括グルーピング等）で
+    // 4096だと出力が途中で切れ、結果として必須フィールド（例: articles）が
+    // 欠けた不完全なJSONになり、呼び出し側で「is not iterable」等の
+    // わかりにくいエラーになる事例が実際に発生したため引き上げた。
+    max_tokens: 8192,
     system,
     tools: [tool],
     tool_choice: { type: "tool", name: tool.name },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     messages: [{ role: "user", content: userContent as any }],
   });
+
+  if (message.stop_reason === "max_tokens") {
+    throw new Error(
+      `「${tool.name}」の出力が長さ制限に達し、途中で切れました。内容量が多いPDFの可能性があります。`
+    );
+  }
+
   const toolUse = message.content.find((b) => b.type === "tool_use");
   if (!toolUse || toolUse.type !== "tool_use") {
     throw new Error(`「${tool.name}」の構造化出力が得られませんでした`);
