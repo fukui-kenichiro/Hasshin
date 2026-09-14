@@ -178,6 +178,9 @@ export interface ProcessingJobPayload {
   // rewrite
   targetSiteLabel?: string;
   isDerivative?: boolean;
+  // 「党内限定」等の判定で自動リライトされなかった記事を、担当者の指示で
+  // 強制的にリライトする際に付与する追加条件（プロンプトにそのまま渡す）
+  rewriteCondition?: string;
   // tag_region / rewrite / detect_duplicates 共通
   sourceType?: SourceType;
 }

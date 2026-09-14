@@ -518,6 +518,12 @@ export async function addInternalInfoFlags(
   if (error) throw new Error(error.message);
 }
 
+// リライトのやり直し（強制リライト等）で、古い判定結果を残さないためのクリア。
+export async function clearInternalInfoFlags(articleId: string): Promise<void> {
+  const { error } = await sb().from("internal_info_flags").delete().eq("article_id", articleId);
+  if (error) throw new Error(error.message);
+}
+
 export async function listInternalInfoFlags(articleId: string): Promise<InternalInfoFlag[]> {
   const { data } = await sb().from("internal_info_flags").select("*").eq("article_id", articleId);
   return (data ?? []).map(toInternalInfoFlag);

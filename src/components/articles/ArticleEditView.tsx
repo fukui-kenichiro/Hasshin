@@ -71,6 +71,10 @@ export function ArticleEditView({
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteWarning, setDeleteWarning] = useState<string | null>(null);
+  const [showForceRewrite, setShowForceRewrite] = useState(false);
+  const [rewriteCondition, setRewriteCondition] = useState("");
+  const [isForceRewriting, setIsForceRewriting] = useState(false);
+  const [forceRewriteError, setForceRewriteError] = useState<string | null>(null);
 
   const unresolvedCount = internalInfoFlags.filter((f) => f.status === "unresolved").length;
   const openDuplicates = duplicateFlags.filter((f) => f.status === "open");
@@ -118,6 +122,32 @@ export function ArticleEditView({
       setIsResending(false);
     }
   }
+  async function handleForceRewrite() {
+    setForceRewriteError(null);
+    if (!rewriteCondition.trim()) {
+      setForceRewriteError("条件を入力してください");
+      return;
+    }
+    setIsForceRewriting(true);
+    try {
+      const res = await fetch(`/api/articles/${article.id}/force-rewrite`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ condition: rewriteCondition }),
+      });
+      if (!res.ok) {
+        setForceRewriteError("リライトの開始に失敗しました。もう一度お試しください。");
+        return;
+      }
+      await drainJobTicks(3);
+      setShowForceRewrite(false);
+      setRewriteCondition("");
+      refresh();
+    } finally {
+      setIsForceRewriting(false);
+    }
+  }
+
   async function handleDeleteForever() {
     setIsDeleting(true);
     try {
@@ -210,6 +240,52 @@ export function ArticleEditView({
   const segments = article.bodyRewritten
     ? buildHighlightSegments(article.bodyRewritten, internalInfoFlags)
     : [];
+
+  // リライト前の記事では「条件付きで書き直す」、リライト後の記事では
+  // 「修正を指示する」として、同じ仕組み（条件をAIへの追加指示として渡し、
+  // rewriteジョブを再実行する）を使う。
+  function renderRewriteConditionControl(buttonLabel: string) {
+    return !showForceRewrite ? (
+      <button
+        onClick={() => setShowForceRewrite(true)}
+        className="self-start rounded-md border border-hs-primary px-3.5 py-1.5 text-[12px] font-bold text-hs-primary hover:bg-hs-stone-50"
+      >
+        {buttonLabel}
+      </button>
+    ) : (
+      <div className="flex flex-col gap-2 rounded-md border border-hs-stone-300 bg-hs-stone-50 p-3">
+        <label className="text-[12px] font-bold text-hs-text-secondary">
+          条件（例: 「団体名は伏せて」「この部分は削らず残して」など、AIへの追加指示）
+        </label>
+        <textarea
+          value={rewriteCondition}
+          onChange={(e) => setRewriteCondition(e.target.value)}
+          placeholder="書き直しの条件を入力してください"
+          className="min-h-[80px] rounded border border-hs-stone-300 bg-white p-2.5 text-sm leading-7 text-hs-text outline-none focus:border-hs-primary"
+        />
+        {forceRewriteError && <FriendlyError message={forceRewriteError} />}
+        <div className="flex gap-2">
+          <button
+            onClick={handleForceRewrite}
+            disabled={isForceRewriting}
+            className="rounded-md bg-hs-primary px-3.5 py-1.5 text-[12px] font-bold text-white hover:bg-hs-primary-dark disabled:opacity-50"
+          >
+            {isForceRewriting ? "実行中…" : "実行"}
+          </button>
+          <button
+            onClick={() => {
+              setShowForceRewrite(false);
+              setForceRewriteError(null);
+            }}
+            disabled={isForceRewriting}
+            className="rounded-md border border-hs-stone-300 bg-white px-3.5 py-1.5 text-[12px] text-hs-text-secondary"
+          >
+            やめる
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (deleteWarning) {
     return (
@@ -419,26 +495,34 @@ export function ArticleEditView({
           ) : (
             <div className="flex-1 overflow-auto whitespace-pre-wrap p-4 text-sm leading-8 text-hs-text">
               {article.bodyRewritten ? (
-                segments.map((seg, i) =>
-                  seg.flag ? (
-                    <mark
-                      key={i}
-                      className={
-                        seg.flag.status === "unresolved"
-                          ? "rounded-[2px] border-b-2 border-hs-danger bg-hs-danger-bg px-0.5"
-                          : "rounded-[2px] border-b-2 border-hs-success-border bg-hs-success-bg px-0.5"
-                      }
-                    >
-                      {seg.text}
-                    </mark>
-                  ) : (
-                    <span key={i}>{seg.text}</span>
-                  )
-                )
+                <div className="flex flex-col gap-3">
+                  <div>
+                    {segments.map((seg, i) =>
+                      seg.flag ? (
+                        <mark
+                          key={i}
+                          className={
+                            seg.flag.status === "unresolved"
+                              ? "rounded-[2px] border-b-2 border-hs-danger bg-hs-danger-bg px-0.5"
+                              : "rounded-[2px] border-b-2 border-hs-success-border bg-hs-success-bg px-0.5"
+                          }
+                        >
+                          {seg.text}
+                        </mark>
+                      ) : (
+                        <span key={i}>{seg.text}</span>
+                      )
+                    )}
+                  </div>
+                  {renderRewriteConditionControl("修正を指示する")}
+                </div>
               ) : (
-                <span className="text-hs-text-disabled">
-                  この記事は「{SUITABILITY_LABEL[article.publicSuitability]}」と判定されたため、書き直しは自動では行っていません。「手直しする」を押すと、ここに直接文章を書いて公開することもできます。
-                </span>
+                <div className="flex flex-col gap-3">
+                  <span className="text-hs-text-disabled">
+                    この記事は「{SUITABILITY_LABEL[article.publicSuitability]}」と判定されたため、書き直しは自動では行っていません。「手直しする」を押すと、ここに直接文章を書いて公開することもできます。
+                  </span>
+                  {renderRewriteConditionControl("条件付きで書き直す")}
+                </div>
               )}
             </div>
           )}

@@ -81,7 +81,10 @@ export const REWRITE_SYSTEM_PROMPT = `あなたは、政党の地区委員会・
   ]
 }
 
-internal_info_flags は、元の記事に含まれていた内部限定情報・個人情報の疑いがある箇所を漏れなく報告すること。除外に成功した箇所も present_in_rewrite: false として報告し、担当者が「何が除外されたか」を確認できるようにする。`;
+internal_info_flags は、元の記事に含まれていた内部限定情報・個人情報の疑いがある箇所を漏れなく報告すること。除外に成功した箇所も present_in_rewrite: false として報告し、担当者が「何が除外されたか」を確認できるようにする。
+
+# 担当者からの追加条件について
+入力に「担当者からの追加条件」が含まれる場合、それは人が明示的に指定した指示であり、上記の一般的な方針より優先して反映すること（例:「この団体名は伏せて」「この部分は削らず残して」等）。ただし、追加条件がある場合でも internal_info_flags の報告（何が残り、何を除外したか）は省略せず必ず行うこと。`;
 
 export interface GlossaryEntryInput {
   term: string;
@@ -92,13 +95,20 @@ export function buildRewriteUserPrompt(
   title: string,
   bodyText: string,
   targetSiteLabel: string,
-  glossary: GlossaryEntryInput[] = []
+  glossary: GlossaryEntryInput[] = [],
+  condition?: string,
+  isRevision = false
 ): string {
   const glossarySection =
     glossary.length > 0
       ? `\n\n党内用語辞典:\n${glossary.map((g) => `${g.term} → ${g.explanation}`).join("\n")}`
       : "";
-  return `掲載先: ${targetSiteLabel}\n\n元のタイトル: ${title}\n\n元の本文:\n${bodyText}${glossarySection}`;
+  const conditionSection = condition ? `\n\n担当者からの追加条件:\n${condition}` : "";
+
+  if (isRevision) {
+    return `掲載先: ${targetSiteLabel}\n\n以下は、すでに一般公開向けにリライト済みの文章です。担当者からの追加条件（指示された修正）だけを反映し、指示されていない部分はできるだけそのまま維持してください。\n\n現在のタイトル: ${title}\n\n現在の本文:\n${bodyText}${glossarySection}${conditionSection}`;
+  }
+  return `掲載先: ${targetSiteLabel}\n\n元のタイトル: ${title}\n\n元の本文:\n${bodyText}${glossarySection}${conditionSection}`;
 }
 
 export interface InternalInfoFlagDraft {

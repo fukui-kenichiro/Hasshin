@@ -19,6 +19,7 @@ import { buildWpEndpoint } from "@/lib/wp/client";
 import {
   addDuplicateFlags,
   addInternalInfoFlags,
+  clearInternalInfoFlags,
   claimNextJob,
   createArticle,
   createSourcePages,
@@ -267,13 +268,21 @@ async function handleRewrite(job: ProcessingJob): Promise<void> {
   const glossary = (await listGlossaryTerms()).map((t) => ({ term: t.term, explanation: t.explanation }));
   const targetSiteLabel = job.payload.targetSiteLabel ?? "北多摩東部地区委員会HP";
 
+  // 「修正を指示する」（条件つきの再リライト）で、すでに一度リライトずみの
+  // 記事に対して呼ばれた場合は、原文からではなく現在のリライト済み文章を
+  // 起点に修正する（担当者の指示範囲だけを反映し、それ以外は極力保つため）。
+  const isRevision = !!article.bodyRewritten;
+  const baseTitle = isRevision ? article.titleRewritten! : article.titleOriginal;
+  const baseBody = isRevision ? article.bodyRewritten! : article.bodyOriginal;
+
   const result = await callClaudeTool<RewriteResult>(
     REWRITE_SYSTEM_PROMPT,
-    buildRewriteUserPrompt(article.titleOriginal, article.bodyOriginal, targetSiteLabel, glossary),
+    buildRewriteUserPrompt(baseTitle, baseBody, targetSiteLabel, glossary, job.payload.rewriteCondition, isRevision),
     REWRITE_TOOL
   );
 
   await updateArticle(articleId, { titleRewritten: result.title_rewritten, bodyRewritten: result.body_rewritten });
+  await clearInternalInfoFlags(articleId);
   await addInternalInfoFlags(
     articleId,
     result.internal_info_flags.map((f) => ({
