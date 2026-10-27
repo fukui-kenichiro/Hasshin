@@ -13,6 +13,7 @@ import type {
   GlossaryTerm,
   InternalInfoFlag,
   JobType,
+  LineDraft,
   ProcessingJob,
   ProcessingJobPayload,
   RegionTag,
@@ -169,6 +170,27 @@ function toJob(row: any): ProcessingJob {
     relatedSourceDocumentId: row.related_source_document_id,
     relatedSourcePageId: row.related_source_page_id,
     relatedArticleId: row.related_article_id,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toLineDraft(row: any): LineDraft {
+  return {
+    id: row.id,
+    sourceType: row.source_type,
+    sourceArticleId: row.source_article_id,
+    sourceText: row.source_text,
+    messageText: row.message_text,
+    aiNotes: Array.isArray(row.ai_notes) ? row.ai_notes : [],
+    status: row.status,
+    approvedAt: row.approved_at,
+    scheduledAt: row.scheduled_at,
+    sentAt: row.sent_at,
+    deliveryError: row.delivery_error,
+    deliveryAttempts: row.delivery_attempts,
+    retryKey: row.retry_key,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
   };
 }
 
@@ -649,6 +671,133 @@ export async function addGlossaryTerm(
     .maybeSingle();
   if (error) throw new Error(error.message);
   return data ? toGlossaryTerm(data) : null;
+}
+
+// ---- LINE drafts ----
+
+export async function createLineDraft(input: {
+  sourceType: LineDraft["sourceType"];
+  sourceArticleId: string | null;
+  sourceText: string;
+  messageText: string;
+  aiNotes: string[];
+  createdBy: string;
+}): Promise<LineDraft> {
+  const { data, error } = await sb()
+    .from("line_drafts")
+    .insert({
+      source_type: input.sourceType,
+      source_article_id: input.sourceArticleId,
+      source_text: input.sourceText,
+      message_text: input.messageText,
+      ai_notes: input.aiNotes,
+      created_by: input.createdBy,
+    })
+    .select()
+    .single();
+  if (error) throw new Error(error.message);
+  return toLineDraft(data);
+}
+
+export async function getLineDraftById(id: string): Promise<LineDraft | null> {
+  const { data } = await sb().from("line_drafts").select("*").eq("id", id).maybeSingle();
+  return data ? toLineDraft(data) : null;
+}
+
+export async function listLineDrafts(): Promise<LineDraft[]> {
+  const { data } = await sb().from("line_drafts").select("*").order("created_at", { ascending: false });
+  return (data ?? []).map(toLineDraft);
+}
+
+export async function updateLineDraft(
+  id: string,
+  patch: Partial<{
+    messageText: string;
+    aiNotes: string[];
+    status: LineDraft["status"];
+    approvedBy: string | null;
+    approvedAt: string | null;
+    scheduledAt: string | null;
+    sentAt: string | null;
+    deliveryError: string | null;
+    deliveryAttempts: number;
+    retryKey: string;
+  }>
+): Promise<LineDraft | null> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const update: any = { updated_at: new Date().toISOString() };
+  if (patch.messageText !== undefined) update.message_text = patch.messageText;
+  if (patch.aiNotes !== undefined) update.ai_notes = patch.aiNotes;
+  if (patch.status !== undefined) update.status = patch.status;
+  if (patch.approvedBy !== undefined) update.approved_by = patch.approvedBy;
+  if (patch.approvedAt !== undefined) update.approved_at = patch.approvedAt;
+  if (patch.scheduledAt !== undefined) update.scheduled_at = patch.scheduledAt;
+  if (patch.sentAt !== undefined) update.sent_at = patch.sentAt;
+  if (patch.deliveryError !== undefined) update.delivery_error = patch.deliveryError;
+  if (patch.deliveryAttempts !== undefined) update.delivery_attempts = patch.deliveryAttempts;
+  if (patch.retryKey !== undefined) update.retry_key = patch.retryKey;
+  const { data, error } = await sb().from("line_drafts").update(update).eq("id", id).select().maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? toLineDraft(data) : null;
+}
+
+// 配信時刻を迎えた予約を取り出して「配信中」にする。条件つきの更新で1件ずつ確保するので、
+// 毎分の実行が重なっても同じ文案を二重に取り出さない。配信中のまま10分以上止まっている
+// ものも（関数の強制終了などで残った可能性があるため）再度対象にする。
+export async function claimDueLineDrafts(limit = 5): Promise<LineDraft[]> {
+  const now = new Date();
+  const staleBefore = new Date(now.getTime() - 10 * 60 * 1000).toISOString();
+  const { data: candidates } = await sb()
+    .from("line_drafts")
+    .select("id, status")
+    .or(
+      `and(status.eq.scheduled,scheduled_at.lte.${now.toISOString()}),and(status.eq.sending,updated_at.lt.${staleBefore})`
+    )
+    .order("scheduled_at", { ascending: true })
+    .limit(limit);
+
+  const claimed: LineDraft[] = [];
+  for (const c of candidates ?? []) {
+    const current = await getLineDraftById(c.id);
+    if (!current) continue;
+    const { data } = await sb()
+      .from("line_drafts")
+      .update({
+        status: "sending",
+        delivery_attempts: current.deliveryAttempts + 1,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", c.id)
+      .eq("status", c.status)
+      .eq("delivery_attempts", current.deliveryAttempts)
+      .select()
+      .maybeSingle();
+    if (data) claimed.push(toLineDraft(data));
+  }
+  return claimed;
+}
+
+// ---- App settings ----
+
+export async function getSetting(key: string): Promise<string | null> {
+  const { data } = await sb().from("app_settings").select("value").eq("key", key).maybeSingle();
+  return data?.value ?? null;
+}
+
+export async function setSetting(key: string, value: string | null): Promise<void> {
+  if (value === null) {
+    await sb().from("app_settings").delete().eq("key", key);
+    return;
+  }
+  const { error } = await sb()
+    .from("app_settings")
+    .upsert({ key, value, updated_at: new Date().toISOString() });
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteLineDraft(id: string): Promise<void> {
+  const { error } = await sb().from("line_drafts").delete().eq("id", id);
+  if (error) throw new Error(error.message);
 }
 
 // ---- Processing jobs ----

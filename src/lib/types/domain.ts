@@ -197,3 +197,24 @@ export interface ProcessingJob {
   relatedSourcePageId: string | null;
   relatedArticleId: string | null;
 }
+
+export type LineDraftSourceType = "manual" | "article";
+export type LineDraftStatus = "draft" | "approved" | "scheduled" | "sending" | "sent" | "failed";
+
+export interface LineDraft {
+  id: string;
+  sourceType: LineDraftSourceType;
+  sourceArticleId: string | null;
+  sourceText: string;
+  messageText: string;
+  aiNotes: string[];
+  status: LineDraftStatus;
+  approvedAt: string | null;
+  scheduledAt: string | null;
+  sentAt: string | null;
+  deliveryError: string | null;
+  deliveryAttempts: number;
+  retryKey: string;
+  createdAt: string;
+  updatedAt: string;
+}

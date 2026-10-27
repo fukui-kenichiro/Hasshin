@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { href: "/", label: "確認待ちの記事" },
   { href: "/uploads", label: "PDFの取り込み" },
   { href: "/archive", label: "公開した記事" },
+  { href: "/line", label: "LINE文案作成" },
   { href: "/glossary", label: "党内用語辞典" },
 ] as const;
 

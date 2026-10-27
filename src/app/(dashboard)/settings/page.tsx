@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/session";
-import { listSites } from "@/lib/data/store";
+import { getSetting, listSites } from "@/lib/data/store";
+import { LINE_TEST_USER_KEY, getLineToken } from "@/lib/line/client";
 import { AccountSettingsForm } from "@/components/settings/AccountSettingsForm";
 import { SiteConnectionsForm } from "@/components/settings/SiteConnectionsForm";
+import { LineSettingsForm } from "@/components/settings/LineSettingsForm";
 
 export default async function SettingsPage() {
   const user = await getCurrentUser();
@@ -16,6 +18,8 @@ export default async function SettingsPage() {
     baseUrl: site.baseUrl,
     hasWpApiKey: !!site.wpApiKey,
   }));
+
+  const [lineToken, lineTestUserId] = await Promise.all([getLineToken(), getSetting(LINE_TEST_USER_KEY)]);
 
   return (
     <div className="flex h-screen flex-col">
@@ -39,6 +43,13 @@ export default async function SettingsPage() {
               承認した記事は、ここで接続したサイトへ自動的に下書きとして送信されます。
             </p>
             <SiteConnectionsForm sites={sites} />
+          </section>
+          <section>
+            <h2 className="mb-1 text-[15px] font-bold text-hs-text">LINE公式アカウント連携（LINE文案作成）</h2>
+            <p className="mb-3 text-[12px] text-hs-text-secondary">
+              LINE Developersでこの公式アカウントのMessaging APIを有効にし、発行した「チャネルアクセストークン（長期）」を登録してください。トークンは保存後、画面には表示されません。
+            </p>
+            <LineSettingsForm hasToken={!!lineToken} testUserId={lineTestUserId ?? ""} />
           </section>
         </div>
       </div>

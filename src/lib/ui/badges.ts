@@ -1,6 +1,7 @@
 import type {
   ArticleStatus,
   DuplicateFlagType,
+  LineDraftStatus,
   PublicSuitability,
   RegionTag,
   WpPublishStatus,
@@ -67,4 +68,22 @@ export const WP_PUBLISH_STATUS_BADGE_CLASS: Record<WpPublishStatus, string> = {
   sent: "bg-hs-success-bg text-hs-success-text border-hs-success-border",
   error: "bg-hs-danger-bg text-hs-danger-text border-hs-danger-border",
   blocked: "bg-hs-danger-bg text-hs-danger-text border-hs-danger-border",
+};
+
+export const LINE_STATUS_LABEL: Record<LineDraftStatus, string> = {
+  draft: "文案の確認待ち",
+  approved: "承認ずみ（配信日時は未設定）",
+  scheduled: "配信予約ずみ",
+  sending: "配信中",
+  sent: "配信ずみ",
+  failed: "配信に失敗",
+};
+
+export const LINE_STATUS_BADGE_CLASS: Record<LineDraftStatus, string> = {
+  draft: "bg-hs-warn-bg text-hs-warn-text border-hs-warn-border",
+  approved: "bg-hs-success-bg text-hs-success-text border-hs-success-border",
+  scheduled: "bg-hs-kitatama-bg text-hs-kitatama-text border-hs-kitatama-border",
+  sending: "bg-hs-warn-bg text-hs-warn-text border-hs-warn-border",
+  sent: "bg-hs-stone-100 text-hs-stone-600 border-hs-stone-300",
+  failed: "bg-hs-danger-bg text-hs-danger-text border-hs-danger-border",
 };
